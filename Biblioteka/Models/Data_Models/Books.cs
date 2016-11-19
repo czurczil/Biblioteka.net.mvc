@@ -16,11 +16,11 @@ namespace Biblioteka.Models.Data_Models
         public bool isOnShelf { get; set; }
         public bool isOnWishList { get; set; }
 
-        public virtual ICollection<Book_Authors> Book_Authors { get; set; }
+        public virtual ICollection<Authors> Author { get; set; }
 
-        public virtual ICollection<Book_Genres> Book_Genres { get; set; }
+        public virtual ICollection<Genres> Genre { get; set; }
 
-        public virtual ICollection<Book_Series> Book_Series { get; set; }
+        public virtual ICollection<Series> Serie { get; set; }
 
 
     }

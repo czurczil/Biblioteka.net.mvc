@@ -1,0 +1,74 @@
+﻿@model Biblioteka.Models.Data_Models.Books
+
+@{
+    ViewBag.Title = "Szczegóły";
+}
+
+<h2>Szczegóły</h2>
+
+<div>
+    <h4>Książki</h4>
+    <hr />
+    <dl class="dl-horizontal">
+        <dt>
+            @Html.DisplayName("Tytuł")
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.title)
+        </dd>
+
+        <dt>
+            @Html.DisplayName("Rok wydania")
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.year)
+        </dd>
+
+        <dt>
+            @Html.DisplayName("Opis")
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.description)
+        </dd>
+
+        <dt>
+            @Html.DisplayName("Okładka")
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.cover)
+        </dd>
+
+        <dt>
+            @Html.DisplayName("Ulubione")
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.isFavorite)
+        </dd>
+
+        <dt>
+            @Html.DisplayName("Na półce")
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.isOnShelf)
+        </dd>
+
+        <dt>
+            @Html.DisplayName("Do przeczytania")
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.isOnWishList)
+        </dd>
+
+    </dl>
+</div>
+<p>
+    @Html.ActionLink("Edytuj", "Edit", new { id = Model.id }) |
+    @Html.ActionLink("Powrót", "Index")
+</p>

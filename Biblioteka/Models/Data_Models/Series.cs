@@ -9,6 +9,6 @@ namespace Biblioteka.Models.Data_Models
     {
         public long id { get; set; }
         public string series { get; set; }
-        public virtual ICollection<Book_Series> Book_Series { get; set; }
+        public virtual ICollection<Books> Book { get; set; }
     }
 }

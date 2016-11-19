@@ -10,6 +10,6 @@ namespace Biblioteka.Models.Data_Models
         public long id { get; set; }
         public string genre { get; set; }
 
-        public virtual ICollection<Book_Genres> Book_Genres { get; set; }
+        public virtual ICollection<Books> Book { get; set; }
     }
 }

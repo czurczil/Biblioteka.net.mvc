@@ -66,6 +66,6 @@ C:\Users\czurczak\documents\visual studio 2015\Projects\Biblioteka\Biblioteka\bi
 C:\Users\czurczak\documents\visual studio 2015\Projects\Biblioteka\Biblioteka\bin\Microsoft.Owin.Security.MicrosoftAccount.xml
 C:\Users\czurczak\documents\visual studio 2015\Projects\Biblioteka\Biblioteka\obj\Debug\Biblioteka.dll
 C:\Users\czurczak\documents\visual studio 2015\Projects\Biblioteka\Biblioteka\obj\Debug\Biblioteka.pdb
-C:\Users\czurczak\documents\visual studio 2015\Projects\Biblioteka\Biblioteka\obj\Debug\Biblioteka.csprojResolveAssemblyReference.cache
 C:\Users\czurczak\documents\visual studio 2015\Projects\Biblioteka\Biblioteka\obj\Debug\Biblioteka.Migrations.InitialCreate.resources
 C:\Users\czurczak\documents\visual studio 2015\Projects\Biblioteka\Biblioteka\obj\Debug\Biblioteka.csproj.GenerateResource.Cache
+C:\Users\czurczak\Documents\Visual Studio 2015\Projects\Biblioteka\Biblioteka\obj\Debug\Biblioteka.csprojResolveAssemblyReference.cache

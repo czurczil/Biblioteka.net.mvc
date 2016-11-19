@@ -7,7 +7,7 @@
 <h2>Wszystkie książki</h2>
 
 <p>
-    @Html.ActionLink("Dodaj nową", "AddBook")
+    @Html.ActionLink("Dodaj nową", "Create")
 </p>
 <table class="table">
     <tr>
@@ -59,9 +59,9 @@
             @Html.DisplayFor(modelItem => item.isOnWishList)
         </td>
         <td>
-            @Html.ActionLink("Edit", "Edit", new { id=item.id }) |
-            @Html.ActionLink("Details", "Details", new { id=item.id }) |
-            @Html.ActionLink("Delete", "Delete", new { id=item.id })
+            @Html.ActionLink("Edytuj", "Edit", new { id=item.id }) |
+            @Html.ActionLink("Szczegóły", "Details", new { id=item.id }) |
+            @Html.ActionLink("Usuń", "Delete", new { id=item.id })
         </td>
     </tr>
 }

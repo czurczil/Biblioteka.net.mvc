@@ -1,7 +1,7 @@
 ﻿@model Biblioteka.Models.CombinedDataModels
 
 @{
-    ViewBag.Title = "AddBook";
+    ViewBag.Title = "Create";
 }
 @{
     List<SelectListItem> listItems = new List<SelectListItem>();
@@ -19,10 +19,10 @@
 
 <h2>Dodaj nową</h2>
 
-@using (Html.BeginForm()) 
+@using (Html.BeginForm())
 {
     @Html.AntiForgeryToken()
-    
+
     <div class="form-horizontal">
         <h4>Książka</h4>
         <hr />
@@ -32,6 +32,22 @@
             <div class="col-md-10">
                 @Html.EditorFor(model => model.Books.title, new { htmlAttributes = new { @class = "form-control" } })
                 @Html.ValidationMessageFor(model => model.Books.title, "", new { @class = "text-danger" })
+            </div>
+        </div>
+
+        <div class="form-group">
+            @Html.Label("Gatunek", htmlAttributes: new { @class = "control-label col-md-2" })
+            <div class="col-md-10">
+                @Html.EditorFor(model => model.Genres.genre, new { htmlAttributes = new { @class = "form-control" } })
+                @Html.ValidationMessageFor(model => model.Genres.genre, "", new { @class = "text-danger" })
+            </div>
+        </div>
+
+        <div class="form-group">
+            @Html.Label("Cykl", htmlAttributes: new { @class = "control-label col-md-2" })
+            <div class="col-md-10">
+                @Html.EditorFor(model => model.Series.series, new { htmlAttributes = new { @class = "form-control" } })
+                @Html.ValidationMessageFor(model => model.Series.series, "", new { @class = "text-danger" })
             </div>
         </div>
 
@@ -58,7 +74,7 @@
                 @Html.ValidationMessageFor(model => model.Books.cover, "", new { @class = "text-danger" })
             </div>
         </div>
-@* -----------------------------------------------------------------------------------*@
+        @* -----------------------------------------------------------------------------------*@
         <h4>Autor</h4>
         <hr />
         <div class="form-group">

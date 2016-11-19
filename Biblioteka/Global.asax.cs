@@ -14,7 +14,6 @@ namespace Biblioteka
     {
         protected void Application_Start()
         {
-            //System.Data.Entity.Database.SetInitializer<Models.Database>(new BookInitializer());
             AreaRegistration.RegisterAllAreas();
             FilterConfig.RegisterGlobalFilters(GlobalFilters.Filters);
             RouteConfig.RegisterRoutes(RouteTable.Routes);
