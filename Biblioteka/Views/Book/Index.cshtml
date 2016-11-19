@@ -1,0 +1,69 @@
+﻿@model IEnumerable<Biblioteka.Models.Data_Models.Books>
+
+@{
+    ViewBag.Title = "Index";
+}
+
+<h2>Wszystkie książki</h2>
+
+<p>
+    @Html.ActionLink("Dodaj nową", "AddBook")
+</p>
+<table class="table">
+    <tr>
+        <th>
+            @Html.DisplayName("Tytuł")
+        </th>
+        <th>
+            @Html.DisplayName("Rok wydania")
+        </th>
+        <th>
+            @Html.DisplayName("Opis")
+        </th>
+        <th>
+            @Html.DisplayName("Okładka")
+        </th>
+        <th>
+            @Html.DisplayName("Ulubiona")
+        </th>
+        <th>
+            @Html.DisplayName("Na półce")
+        </th>
+        <th>
+            @Html.DisplayName("Do przeczytania")
+        </th>
+        <th></th>
+    </tr>
+
+@foreach (var item in Model) {
+    <tr>
+        <td>
+            @Html.DisplayFor(modelItem => item.title)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.year)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.description)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.cover)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.isFavorite)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.isOnShelf)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.isOnWishList)
+        </td>
+        <td>
+            @Html.ActionLink("Edit", "Edit", new { id=item.id }) |
+            @Html.ActionLink("Details", "Details", new { id=item.id }) |
+            @Html.ActionLink("Delete", "Delete", new { id=item.id })
+        </td>
+    </tr>
+}
+
+</table>
