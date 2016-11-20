@@ -10,5 +10,7 @@ namespace Biblioteka.Models
     {
         public List<Books> Book { get; set; }
         public List<Authors> Author { get; set; }
+        public List<Genres> Genre { get; set; }
+        public List<Series> Series { get; set; }
     }
 }

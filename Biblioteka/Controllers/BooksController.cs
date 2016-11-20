@@ -18,16 +18,15 @@ namespace Biblioteka.Controllers
         // GET: Books
         public ActionResult Index()
         {
-            var book = db.Books.ToList();
-
-            var author = db.Authors.ToList();
-
-            var BookView = new BookViewModel
+             var BookView = new BookViewModel
             {
-                Book = book,
-                Author = author
+                Book = db.Books.ToList(),
+                Author = db.Authors.ToList(),
+                Genre = db.Genres.ToList(),
+                Series = db.Series.ToList()
             };
-            return View(book);
+
+            return View(BookView);
         }
 
         // GET: Books/Details/5

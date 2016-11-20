@@ -22,8 +22,11 @@
             <div class="navbar-collapse collapse">
                 <ul class="nav navbar-nav">
                     <li>@Html.ActionLink("Książki", "Index", "Books")</li>
-                    <li>@Html.ActionLink("O mnie", "About", "Home")</li>
-                    <li>@Html.ActionLink("Kontakt", "Contact", "Home")</li>
+                    <li>@Html.ActionLink("Autorzy", "Index", "Authors")</li>
+                    <li>@Html.ActionLink("Gatunki", "Index", "Genres")</li>
+                    <li>@Html.ActionLink("Cykle", "Index", "Series")</li>
+                    @*<li>@Html.ActionLink("O mnie", "About", "Home")</li>
+                      <li>@Html.ActionLink("Kontakt", "Contact", "Home")</li>*@
                     <li>@Html.ActionLink("Dodaj książkę", "Create", "Books")</li>
                 </ul>
                 @Html.Partial("_LoginPartial")
