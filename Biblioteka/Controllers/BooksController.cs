@@ -60,42 +60,110 @@ namespace Biblioteka.Controllers
         {
             if (ModelState.IsValid)
             {
-                Books book = new Books()
+                long book_id;
+                long author_id;
+                long genre_id;
+                long series_id;
+                //***************************check if title, author, genre and series are in database************************
+                if (IsInDatabase(newBook.Books.title, null, 0) == false)
                 {
-                    title = newBook.Books.title,
-                    year = newBook.Books.year,
-                    description = newBook.Books.description,
-                    cover = newBook.Books.cover,
-                    Author = new List<Authors>
+                    Books book = new Books()
                     {
-                        new Authors()
-                        {
-                            firstName = newBook.Authors.firstName,
-                            lastName = newBook.Authors.lastName,
-                            birthDate = newBook.Authors.birthDate,
-                            birthPlace = newBook.Authors.birthPlace,
-                            BIO = newBook.Authors.BIO,
-                            photo = newBook.Authors.photo,
-                            sex = newBook.Authors.sex
-                        }
-                    },
-                    Genre = new List<Genres>
-                    {
-                        new Genres()
-                        {
-                            genre = newBook.Genres.genre
-                        }
-                    },
-                    Serie = new List<Series>
-                    {
-                        new Series()
-                        {
-                            series = newBook.Series.series
-                        }
-                    }
-                };
+                        title = newBook.Books.title,
+                        year = newBook.Books.year,
+                        description = newBook.Books.description,
+                        cover = newBook.Books.cover
+                    };
 
-                db.Books.Add(book);
+                    db.Books.Add(book);
+
+                    db.TrySaveChanges();
+
+                    book_id = book.id;
+                }
+                else book_id = db.Books.Where(b => b.title == newBook.Books.title).Select(b => b.id).First();
+
+                if (IsInDatabase(newBook.Authors.firstName, newBook.Authors.lastName, 3) == false) {
+                    Authors author = new Authors()
+                    {
+                        firstName = newBook.Authors.firstName,
+                        lastName = newBook.Authors.lastName,
+                        birthDate = newBook.Authors.birthDate,
+                        birthPlace = newBook.Authors.birthPlace,
+                        BIO = newBook.Authors.BIO,
+                        photo = newBook.Authors.photo,
+                        sex = newBook.Authors.sex
+                    };
+
+                    db.Authors.Add(author);
+
+                    db.TrySaveChanges();
+
+                    author_id = author.id;
+                }
+                else author_id = db.Authors.Where(a => a.firstName == newBook.Authors.firstName && a.lastName == newBook.Authors.lastName).Select(a => a.id).First();
+
+                if (IsInDatabase(newBook.Genres.genre, null, 1) == false) {
+                    Genres genre = new Genres()
+                    {
+                        genre = newBook.Genres.genre
+                    };
+
+                    db.Genres.Add(genre);
+
+                    db.TrySaveChanges();
+
+                    genre_id = genre.id;
+                }
+                else genre_id = db.Genres.Where(g => g.genre == newBook.Genres.genre).Select(g => g.id).First();
+
+                if (IsInDatabase(newBook.Series.series, null, 2) == false)
+                {
+                    Series series = new Series()
+                    {
+                        series = newBook.Series.series
+                    };
+
+                    db.Series.Add(series);
+
+                    db.TrySaveChanges();
+
+                    series_id = series.id;
+                }
+                else series_id = db.Series.Where(s => s.series == newBook.Series.series).Select(s => s.id).First();
+
+                if (BookIsBounded(book_id, author_id, 0) == false)
+                {
+                    Book_Authors bk = new Book_Authors()
+                    {
+                        BookId = book_id,
+                        AuthorId = author_id
+                    };
+
+                    db.Book_Authors.Add(bk);
+                }
+
+                if (BookIsBounded(book_id, genre_id, 1) == false)
+                {
+                    Book_Genres bg = new Book_Genres()
+                    {
+                        BookId = book_id,
+                        GenreId = genre_id
+                    };
+
+                    db.Book_Genres.Add(bg);
+                }
+
+                if (BookIsBounded(book_id, series_id, 2) == false)
+                {
+                    Book_Series bs = new Book_Series()
+                    {
+                        BookId = book_id,
+                        SeriesId = series_id
+                    };
+
+                    db.Book_Series.Add(bs);
+                }
 
                 db.TrySaveChanges();
 
@@ -159,6 +227,63 @@ namespace Biblioteka.Controllers
             db.Books.Remove(books);
             db.SaveChanges();
             return RedirectToAction("Index");
+        }
+
+        public bool IsInDatabase(string data, string data2, int n)
+        {
+            using (var context = new Models.Database())
+            {
+                if (n == 0)
+                {
+                   if(context.Books.Any(b => b.title == data))
+                        return true;
+                    else return false;
+                }
+                else if (n == 1)
+                {
+                    if(context.Genres.Any(g => g.genre == data))
+                        return true;
+                    else return false;
+                }
+                else if (n == 2)
+                {
+                    if(context.Series.Any(s => s.series == data))
+                        return true;
+                    else return false;
+                }
+                else
+                {
+                    if(context.Authors.Any(a => a.firstName == data && a.lastName == data2))
+                        return true;
+                    else return false;
+                }
+            }
+        }
+
+        public bool BookIsBounded(long book_id, long second_id, int n)
+        {
+            using (var context = new Models.Database())
+            {
+                if (n == 0)
+                {
+                    if (context.Book_Authors.Any(ba => ba.BookId == book_id && ba.AuthorId == second_id))
+                        return true;
+                    else return false;
+                }
+                else if (n == 1)
+                {
+                    if (context.Book_Genres.Any(bg => bg.BookId == book_id && bg.GenreId == second_id))
+                        return true;
+                    else return false;
+                }
+                else
+                {
+                    if (context.Book_Series.Any(bs => bs.BookId == book_id && bs.SeriesId == second_id))
+                        return true;
+                    else return false;
+                }
+            }
+
         }
 
         protected override void Dispose(bool disposing)

@@ -14,6 +14,9 @@ namespace Biblioteka.Models
         public DbSet<Authors> Authors { get; set; }
         public DbSet<Genres> Genres { get; set; }
         public DbSet<Series> Series { get; set; }
+        public DbSet<Book_Authors> Book_Authors { get;set; }
+        public DbSet<Book_Genres> Book_Genres { get; set; }
+        public DbSet<Book_Series> Book_Series { get; set; }
 
         public Database() : base("name=DefaultConnection") { }
 
