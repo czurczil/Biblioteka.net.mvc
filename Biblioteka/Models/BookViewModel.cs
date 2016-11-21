@@ -12,5 +12,8 @@ namespace Biblioteka.Models
         public List<Authors> Author { get; set; }
         public List<Genres> Genre { get; set; }
         public List<Series> Series { get; set; }
+
+        public HttpPostedFileBase cover { get; set; }
+        public HttpPostedFileBase photo { get; set; }
     }
 }

@@ -49,7 +49,10 @@
             @Html.DisplayName("Zdjęcie")
         </dt>
         <dd>
-            @Html.DisplayFor(model => model.photo)
+            @if (Model.photo != null)
+            {
+                <img src="~/img/photos/@Model.photo" width="130" height="200" />
+            }
         </dd>
 
     </dl>

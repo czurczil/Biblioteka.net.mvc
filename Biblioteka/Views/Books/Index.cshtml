@@ -48,7 +48,8 @@
                     @Html.DisplayFor(modelItem => item.description)
                 </td>
                 <td>
-                    @Html.DisplayFor(modelItem => item.cover)
+                    @if (item.cover != null)
+                    {<img src="~/img/covers/@item.cover" width="130" height="200" /> }
                 </td>
                 <td>
                     @Html.DisplayFor(modelItem => item.isFavorite)

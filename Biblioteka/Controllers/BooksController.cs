@@ -8,6 +8,7 @@ using System.Web;
 using System.Web.Mvc;
 using Biblioteka.Models;
 using Biblioteka.Models.Data_Models;
+using System.Configuration;
 
 namespace Biblioteka.Controllers
 {
@@ -62,7 +63,7 @@ namespace Biblioteka.Controllers
                 long book_id;
                 long author_id;
                 long genre_id;
-                long series_id;
+                long series_id;                
                 //***************************check if title, author, genre and series are in database************************
                 if (IsInDatabase(newBook.Books.title, null, 0) == false)
                 {
@@ -71,12 +72,14 @@ namespace Biblioteka.Controllers
                         title = newBook.Books.title,
                         year = newBook.Books.year,
                         description = newBook.Books.description,
-                        cover = newBook.Books.cover
+                        cover = newBook.cover.FileName
                     };
 
                     db.Books.Add(book);
 
                     db.TrySaveChanges();
+
+                    newBook.cover.SaveAs(HttpContext.Server.MapPath(ConfigurationManager.AppSettings["bookCovers"]) + book.cover);
 
                     book_id = book.id;
                 }
@@ -90,13 +93,15 @@ namespace Biblioteka.Controllers
                         birthDate = newBook.Authors.birthDate,
                         birthPlace = newBook.Authors.birthPlace,
                         BIO = newBook.Authors.BIO,
-                        photo = newBook.Authors.photo,
+                        photo = newBook.photo.FileName,
                         sex = newBook.Authors.sex
                     };
 
                     db.Authors.Add(author);
 
                     db.TrySaveChanges();
+
+                    newBook.photo.SaveAs(HttpContext.Server.MapPath(ConfigurationManager.AppSettings["authorPhoto"]) + author.photo);
 
                     author_id = author.id;
                 }
@@ -183,7 +188,12 @@ namespace Biblioteka.Controllers
             {
                 return HttpNotFound();
             }
-            return View(books);
+
+            var editModel = new CombinedDataModels
+            {
+                Books = db.Books.Find(id)
+            };
+            return View(editModel);
         }
 
         // POST: Books/Edit/5
@@ -191,15 +201,26 @@ namespace Biblioteka.Controllers
         // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Edit([Bind(Include = "id,title,year,description,cover,isFavorite,isOnShelf,isOnWishList")] Books books)
+        public ActionResult Edit(CombinedDataModels editedBook)
         {
             if (ModelState.IsValid)
             {
+                var books = db.Books.Find(editedBook.Books.id);
+                books.title = editedBook.Books.title;
+                books.year = editedBook.Books.year;
+                books.description = editedBook.Books.description;
+                books.isFavorite = editedBook.Books.isFavorite;
+                books.isOnShelf = editedBook.Books.isOnShelf;
+                books.isOnWishList = editedBook.Books.isOnWishList;
+
+                books.cover = editedBook.cover.FileName;
+                editedBook.cover.SaveAs(HttpContext.Server.MapPath(ConfigurationManager.AppSettings["bookCovers"]) + books.cover);
+
                 db.Entry(books).State = EntityState.Modified;
                 db.SaveChanges();
                 return RedirectToAction("Index");
             }
-            return View(books);
+            return View(editedBook);
         }
 
         // GET: Books/Delete/5

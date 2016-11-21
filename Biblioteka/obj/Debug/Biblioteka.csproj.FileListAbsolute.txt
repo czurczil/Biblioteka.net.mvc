@@ -68,4 +68,4 @@ C:\Users\czurczak\documents\visual studio 2015\Projects\Biblioteka\Biblioteka\ob
 C:\Users\czurczak\documents\visual studio 2015\Projects\Biblioteka\Biblioteka\obj\Debug\Biblioteka.pdb
 C:\Users\czurczak\documents\visual studio 2015\Projects\Biblioteka\Biblioteka\obj\Debug\Biblioteka.Migrations.InitialCreate.resources
 C:\Users\czurczak\documents\visual studio 2015\Projects\Biblioteka\Biblioteka\obj\Debug\Biblioteka.csproj.GenerateResource.Cache
-C:\Users\czurczak\Documents\Visual Studio 2015\Projects\Biblioteka\Biblioteka\obj\Debug\Biblioteka.csprojResolveAssemblyReference.cache
+C:\Users\czurczak\documents\visual studio 2015\Projects\Biblioteka\Biblioteka\obj\Debug\Biblioteka.csprojResolveAssemblyReference.cache

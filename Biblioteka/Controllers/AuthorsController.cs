@@ -8,6 +8,7 @@ using System.Web;
 using System.Web.Mvc;
 using Biblioteka.Models;
 using Biblioteka.Models.Data_Models;
+using System.Configuration;
 
 namespace Biblioteka.Controllers
 {
@@ -71,7 +72,11 @@ namespace Biblioteka.Controllers
             {
                 return HttpNotFound();
             }
-            return View(authors);
+            var editModel = new CombinedDataModels
+            {
+                Authors = db.Authors.Find(id)
+            };
+            return View(editModel);
         }
 
         // POST: Authors/Edit/5
@@ -79,15 +84,27 @@ namespace Biblioteka.Controllers
         // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Edit([Bind(Include = "id,firstName,lastName,birthDate,sex,birthPlace,BIO,photo")] Authors authors)
+        public ActionResult Edit(CombinedDataModels editedAuthor)
         {
             if (ModelState.IsValid)
             {
+                var authors = db.Authors.Find(editedAuthor.Authors.id);
+
+                authors.firstName = editedAuthor.Authors.firstName;
+                authors.lastName = editedAuthor.Authors.lastName;
+                authors.birthDate = editedAuthor.Authors.birthDate;
+                authors.birthPlace = editedAuthor.Authors.birthPlace;
+                authors.BIO = editedAuthor.Authors.BIO;
+                authors.sex = editedAuthor.Authors.sex;
+
+                authors.photo = editedAuthor.photo.FileName;
+                editedAuthor.photo.SaveAs(HttpContext.Server.MapPath(ConfigurationManager.AppSettings["authorPhotos"]) + authors.photo);
+
                 db.Entry(authors).State = EntityState.Modified;
                 db.SaveChanges();
                 return RedirectToAction("Index");
             }
-            return View(authors);
+            return View(editedAuthor);
         }
 
         // GET: Authors/Delete/5

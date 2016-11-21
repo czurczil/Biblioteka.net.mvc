@@ -37,8 +37,11 @@
             @Html.DisplayName("Okładka")
         </dt>
 
-        <dd>
-            @Html.DisplayFor(model => model.cover)
+        <dd> 
+            @if (Model.cover != null)
+            {
+                <img src="~/img/covers/@Model.cover" width="130" height="200" />
+            }
         </dd>
 
         <dt>
