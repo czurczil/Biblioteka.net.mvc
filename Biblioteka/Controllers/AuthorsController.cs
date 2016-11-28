@@ -97,8 +97,11 @@ namespace Biblioteka.Controllers
                 authors.BIO = editedAuthor.Authors.BIO;
                 authors.sex = editedAuthor.Authors.sex;
 
-                authors.photo = editedAuthor.photo.FileName;
-                editedAuthor.photo.SaveAs(HttpContext.Server.MapPath(ConfigurationManager.AppSettings["authorPhotos"]) + authors.photo);
+                if (editedAuthor.photo != null)
+                {
+                    authors.photo = editedAuthor.photo.FileName;
+                    editedAuthor.photo.SaveAs(HttpContext.Server.MapPath(ConfigurationManager.AppSettings["authorPhotos"]) + authors.photo);
+                }
 
                 db.Entry(authors).State = EntityState.Modified;
                 db.SaveChanges();

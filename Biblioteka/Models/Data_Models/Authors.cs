@@ -20,6 +20,6 @@ namespace Biblioteka.Models.Data_Models
         public string BIO { get; set; }
         public string photo { get; set; }
 
-        public virtual ICollection<Books> Book { get; set; }
+        public virtual ICollection<Book_Authors> Book_Authors { get; set; }
     }
 }

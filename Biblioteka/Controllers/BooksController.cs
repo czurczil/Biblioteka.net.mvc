@@ -67,41 +67,68 @@ namespace Biblioteka.Controllers
                 //***************************check if title, author, genre and series are in database************************
                 if (IsInDatabase(newBook.Books.title, null, 0) == false)
                 {
-                    Books book = new Books()
+                    Books book;
+                    if (newBook.cover == null)
+                        book = new Books()
+                        {
+                            title = newBook.Books.title,
+                            year = newBook.Books.year,
+                            description = newBook.Books.description,
+                            cover = null
+                        };
+                    else
                     {
-                        title = newBook.Books.title,
-                        year = newBook.Books.year,
-                        description = newBook.Books.description,
-                        cover = newBook.cover.FileName
-                    };
+                        book = new Books()
+                        {
+                            title = newBook.Books.title,
+                            year = newBook.Books.year,
+                            description = newBook.Books.description,
+                            cover = newBook.cover.FileName
+                        };
+
+                        newBook.cover.SaveAs(HttpContext.Server.MapPath(ConfigurationManager.AppSettings["bookCovers"]) + book.cover);
+                    }
 
                     db.Books.Add(book);
 
                     db.TrySaveChanges();
-
-                    newBook.cover.SaveAs(HttpContext.Server.MapPath(ConfigurationManager.AppSettings["bookCovers"]) + book.cover);
 
                     book_id = book.id;
                 }
                 else book_id = db.Books.Where(b => b.title == newBook.Books.title).Select(b => b.id).First();
 
                 if (IsInDatabase(newBook.Authors.firstName, newBook.Authors.lastName, 3) == false) {
-                    Authors author = new Authors()
+                    Authors author;
+                    if (newBook.photo == null)
+                        author = new Authors()
+                        {
+                            firstName = newBook.Authors.firstName,
+                            lastName = newBook.Authors.lastName,
+                            birthDate = newBook.Authors.birthDate,
+                            birthPlace = newBook.Authors.birthPlace,
+                            BIO = newBook.Authors.BIO,
+                            photo = null,
+                            sex = newBook.Authors.sex
+                        };
+                    else
                     {
-                        firstName = newBook.Authors.firstName,
-                        lastName = newBook.Authors.lastName,
-                        birthDate = newBook.Authors.birthDate,
-                        birthPlace = newBook.Authors.birthPlace,
-                        BIO = newBook.Authors.BIO,
-                        photo = newBook.photo.FileName,
-                        sex = newBook.Authors.sex
-                    };
+                        author = new Authors()
+                        {
+                            firstName = newBook.Authors.firstName,
+                            lastName = newBook.Authors.lastName,
+                            birthDate = newBook.Authors.birthDate,
+                            birthPlace = newBook.Authors.birthPlace,
+                            BIO = newBook.Authors.BIO,
+                            photo = newBook.photo.FileName,
+                            sex = newBook.Authors.sex
+                        };
+
+                        newBook.photo.SaveAs(HttpContext.Server.MapPath(ConfigurationManager.AppSettings["authorPhotos"]) + author.photo);
+                    }
 
                     db.Authors.Add(author);
 
                     db.TrySaveChanges();
-
-                    newBook.photo.SaveAs(HttpContext.Server.MapPath(ConfigurationManager.AppSettings["authorPhoto"]) + author.photo);
 
                     author_id = author.id;
                 }
@@ -212,9 +239,12 @@ namespace Biblioteka.Controllers
                 books.isFavorite = editedBook.Books.isFavorite;
                 books.isOnShelf = editedBook.Books.isOnShelf;
                 books.isOnWishList = editedBook.Books.isOnWishList;
-
-                books.cover = editedBook.cover.FileName;
-                editedBook.cover.SaveAs(HttpContext.Server.MapPath(ConfigurationManager.AppSettings["bookCovers"]) + books.cover);
+                if(editedBook.cover != null)
+                {
+                    books.cover = editedBook.cover.FileName;
+                    editedBook.cover.SaveAs(HttpContext.Server.MapPath(ConfigurationManager.AppSettings["bookCovers"]) + books.cover);
+                }
+                
 
                 db.Entry(books).State = EntityState.Modified;
                 db.SaveChanges();
