@@ -12,15 +12,14 @@ namespace Biblioteka.Models.Data_Models
         public int year { get; set; }
         public string description { get; set; }
         public string cover { get; set; }
-        public bool isFavorite { get; set; }
-        public bool isOnShelf { get; set; }
-        public bool isOnWishList { get; set; }
 
         public virtual ICollection<Book_Authors> Book_Authors { get; set; }
 
         public virtual ICollection<Book_Genres> Book_Genres { get; set; }
 
         public virtual ICollection<Book_Series> Book_Series { get; set; }
+
+        public virtual ICollection<User_Books> User_Books { get; set; }
 
 
     }

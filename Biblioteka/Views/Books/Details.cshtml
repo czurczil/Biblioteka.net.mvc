@@ -1,4 +1,4 @@
-﻿@model Biblioteka.Models.Data_Models.Books
+﻿@model Biblioteka.Models.BookDetailsModel
 
 @{
     ViewBag.Title = "Szczegóły";
@@ -15,7 +15,7 @@
         </dt>
 
         <dd>
-            @Html.DisplayFor(model => model.title)
+            @Html.DisplayFor(model => model.Book.title)
         </dd>
 
         <dt>
@@ -23,7 +23,7 @@
         </dt>
 
         <dd>
-            @Html.DisplayFor(model => model.year)
+            @Html.DisplayFor(model => model.Book.year)
         </dd>
 
         <dt>
@@ -31,7 +31,7 @@
         </dt>
 
         <dd>
-            @Html.DisplayFor(model => model.description)
+            @Html.DisplayFor(model => model.Book.description)
         </dd>
 
         <dt>
@@ -39,39 +39,82 @@
         </dt>
 
         <dd>
-            @if (Model.cover != null)
+            @if (Model.Book.cover != null)
             {
-                <img src="~/img/covers/@Model.cover" width="130" height="200" />
+                <img src="~/img/covers/@Model.Book.cover" width="130" height="200" />
             }
         </dd>
 
         <dt>
-            @Html.DisplayName("Ulubione")
+            @Html.DisplayName("Autorzy")
         </dt>
 
-        <dd>
-            @Html.DisplayFor(model => model.isFavorite)
-        </dd>
+        @foreach (var item in Model.Details)
+        {
+            if (item.AuthorChecked)
+            {
+                <dd>
+                    @item.Author.firstName
+                    @item.Author.lastName
+                </dd>
+            }
+        }
 
         <dt>
-            @Html.DisplayName("Na półce")
+            @Html.DisplayName("Gatunki")
         </dt>
 
-        <dd>
-            @Html.DisplayFor(model => model.isOnShelf)
-        </dd>
+        @foreach (var item in Model.Details)
+        {
+            if (item.GenreChecked)
+            {
+                <dd>
+                    @item.Genre.genre
+                </dd>
+            }
+        }
 
         <dt>
-            @Html.DisplayName("Do przeczytania")
+            @Html.DisplayName("Cykle")
         </dt>
 
-        <dd>
-            @Html.DisplayFor(model => model.isOnWishList)
-        </dd>
+        @foreach (var item in Model.Details)
+        {
+            if (item.SeriesChecked)
+            {
+                <dd>
+                    @item.Series.series
+                </dd>
+            }
+        }
+
+       @* <dt>
+        @Html.DisplayName("Ulubione")
+    </dt>
+
+    <dd>
+        @Html.DisplayFor(model => model.isFavorite)
+    </dd>
+
+    <dt>
+        @Html.DisplayName("Przeczytane")
+    </dt>
+
+    <dd>
+        @Html.DisplayFor(model => model.Book.isRead)
+    </dd>
+
+    <dt>
+        @Html.DisplayName("Do przeczytania")
+    </dt>
+
+    <dd>
+        @Html.DisplayFor(model => model.Book.isOnWishList)
+    </dd>*@
 
     </dl>
 </div>
 <p>
-    @Html.ActionLink("Edytuj", "Edit", new { id = Model.id }) |
+    @Html.ActionLink("Edytuj", "Edit", new { id = Model.Book.id }) |
     @Html.ActionLink("Powrót", "Index")
 </p>

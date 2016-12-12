@@ -6,9 +6,17 @@
 
 <h2>Autorzy</h2>
 
-@*<p>
-    @Html.ActionLink("Dodaj", "Create")
-    </p>*@
+<p>
+    @*@Html.ActionLink("Dodaj", "Create")*@
+    @using (Html.BeginForm("Index", "Authors", FormMethod.Get))
+    {
+    <p>
+        Autor: @Html.TextBox("searchAuthor")
+        <input type="submit" value="Szukaj" />
+        Sortowanie: @Html.DropDownList("Sort", "")
+        <input type="submit" value="Sortuj" />
+    </p>
+    }
 <table class="table">
     <tr>
         <th>

@@ -14,12 +14,44 @@ namespace Biblioteka.Controllers
 {
     public class AuthorsController : Controller
     {
-        private Models.Database db = new Models.Database();
+        private ApplicationDbContext db = new ApplicationDbContext();
 
         // GET: Authors
-        public ActionResult Index()
+        public ActionResult Index(string searchAuthor, string Sort)
         {
-            return View(db.Authors.ToList());
+            var authors = from a in db.Authors select a;
+
+            var sorting = new List<string>() { "Imię: alfabetycznie", "Imię: niealfabatycznie", "Nazwisko: alfabetycznie", "Nazwisko: niealfabatycznie" };
+            ViewBag.Sort = new SelectList(sorting);
+
+            if (!String.IsNullOrEmpty(searchAuthor))
+            {
+                authors = authors.Where(a => a.firstName.Contains(searchAuthor) || a.lastName.Contains(searchAuthor)
+                || (a.firstName + " " + a.lastName).Contains(searchAuthor) || (a.lastName + " " + a.firstName).Contains(searchAuthor));
+            }
+
+            if(!String.IsNullOrEmpty(Sort))
+            {
+                switch (Sort)
+                {
+                    case "Imię: alfabetycznie":
+                        authors = authors.OrderBy(a => a.firstName);
+                        break;
+                    case "Imię: niealfabatycznie":
+                        authors = authors.OrderByDescending(a => a.firstName);
+                        break;
+                    case "Nazwisko: alfabetycznie":
+                        authors = authors.OrderBy(a => a.lastName);
+                        break;
+                    case "Nazwisko: niealfabatycznie":
+                        authors = authors.OrderByDescending(a => a.lastName);
+                        break;
+                    default:
+                        break;
+                }
+            }
+
+            return View(authors);
         }
 
         // GET: Authors/Details/5
@@ -34,7 +66,26 @@ namespace Biblioteka.Controllers
             {
                 return HttpNotFound();
             }
-            return View(authors);
+
+            var viewModel = new AuthorDetailsModel();
+
+            viewModel.Author = new Authors
+            {
+                id = authors.id,
+                firstName = authors.firstName,
+                lastName = authors.lastName,
+                birthDate = authors.birthDate,
+                sex = authors.sex,
+                birthPlace = authors.birthPlace,
+                BIO = authors.BIO,
+                photo = authors.photo
+            };
+
+            var details = RelatedData(id);
+
+            viewModel.Books = details;
+
+            return View(viewModel);
         }
 
         // GET: Authors/Create
@@ -72,10 +123,24 @@ namespace Biblioteka.Controllers
             {
                 return HttpNotFound();
             }
-            var editModel = new CombinedDataModels
+            var editModel = new AuthorDetailsModel();
+
+            editModel.Author = new Authors
             {
-                Authors = db.Authors.Find(id)
+                id = authors.id,
+                firstName = authors.firstName,
+                lastName = authors.lastName,
+                birthDate = authors.birthDate,
+                sex = authors.sex,
+                birthPlace = authors.birthPlace,
+                BIO = authors.BIO,
+                photo = authors.photo
             };
+
+            var details = RelatedData(id);
+
+            editModel.Books = details;
+
             return View(editModel);
         }
 
@@ -84,18 +149,18 @@ namespace Biblioteka.Controllers
         // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Edit(CombinedDataModels editedAuthor)
+        public ActionResult Edit(AuthorDetailsModel editedAuthor)
         {
             if (ModelState.IsValid)
             {
-                var authors = db.Authors.Find(editedAuthor.Authors.id);
+                var authors = db.Authors.Find(editedAuthor.Author.id);
 
-                authors.firstName = editedAuthor.Authors.firstName;
-                authors.lastName = editedAuthor.Authors.lastName;
-                authors.birthDate = editedAuthor.Authors.birthDate;
-                authors.birthPlace = editedAuthor.Authors.birthPlace;
-                authors.BIO = editedAuthor.Authors.BIO;
-                authors.sex = editedAuthor.Authors.sex;
+                authors.firstName = editedAuthor.Author.firstName;
+                authors.lastName = editedAuthor.Author.lastName;
+                authors.birthDate = editedAuthor.Author.birthDate;
+                authors.birthPlace = editedAuthor.Author.birthPlace;
+                authors.BIO = editedAuthor.Author.BIO;
+                authors.sex = editedAuthor.Author.sex;
 
                 if (editedAuthor.photo != null)
                 {
@@ -134,6 +199,35 @@ namespace Biblioteka.Controllers
             db.Authors.Remove(authors);
             db.SaveChanges();
             return RedirectToAction("Index");
+        }
+
+        public List<AuthorDetailsList> RelatedData(long? id)
+        {
+            //var books = from b in db.Books
+            //             select new
+            //             {
+            //                 b.title,
+            //                 b.cover,
+            //                 Checked = (from ba in db.Book_Authors
+            //                            where (ba.BookId == b.id) & (ba.AuthorId == id)
+            //                            select ba).Count() > 0
+            //             };
+            //foreach (var item in books)
+            //{
+            //    details.Add(new AuthorDetailsList { Books = new Books { title = item.title, cover = item.cover }, BooksChecked = item.Checked });
+            //}
+
+            var details = new List<AuthorDetailsList>();
+
+            var books = db.Books.ToList();
+            var book_authors = db.Book_Authors.ToList();
+
+            foreach (var b in books)
+                foreach (Book_Authors ba in book_authors)
+                    if (b.id == ba.BookId && id == ba.AuthorId)
+                            details.Add(new AuthorDetailsList { Books = new Books { title = b.title, cover = b.cover }, BooksChecked = true });
+
+            return details;
         }
 
         protected override void Dispose(bool disposing)

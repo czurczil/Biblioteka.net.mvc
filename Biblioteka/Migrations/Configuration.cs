@@ -5,7 +5,7 @@ namespace Biblioteka.Migrations
     using System.Data.Entity.Migrations;
     using System.Linq;
 
-    internal sealed class Configuration : DbMigrationsConfiguration<Biblioteka.Models.Database>
+    internal sealed class Configuration : DbMigrationsConfiguration<Biblioteka.Models.ApplicationDbContext>
     {
         public Configuration()
         {
@@ -13,7 +13,7 @@ namespace Biblioteka.Migrations
             ContextKey = "Biblioteka.Models.Database";
         }
 
-        protected override void Seed(Biblioteka.Models.Database context)
+        protected override void Seed(Biblioteka.Models.ApplicationDbContext context)
         {
             //  This method will be called after migrating to the latest version.
 

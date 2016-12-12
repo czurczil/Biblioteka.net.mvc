@@ -13,7 +13,7 @@ namespace Biblioteka.Controllers
 {
     public class SeriesController : Controller
     {
-        private Models.Database db = new Models.Database();
+        private ApplicationDbContext db = new ApplicationDbContext();
 
         // GET: Series
         public ActionResult Index()

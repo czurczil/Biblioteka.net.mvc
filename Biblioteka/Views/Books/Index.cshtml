@@ -1,14 +1,30 @@
-﻿@model Biblioteka.Models.BookViewModel
+﻿@model IEnumerable<Biblioteka.Models.Data_Models.Books>
 
 @{
     ViewBag.Title = "Index";
 }
 
+
+
+ 
+
 <h2>Wszystkie książki</h2>
 
 <p>
     @Html.ActionLink("Dodaj nową", "Create")
-</p>
+    @using (Html.BeginForm("Index", "Books", FormMethod.Get))
+    {
+    <p>
+        Tytuł: @Html.TextBox("searchTitle")
+        Autor: @Html.TextBox("searchAuthor")
+        Gatunek: @Html.DropDownList("BookGenre", "")
+        <input type="submit" value="Szukaj" />
+        Sortowanie: @Html.DropDownList("Sort","")
+        <input type="submit" value="Sortuj" />
+    </p>
+    }
+
+
 <table class="table">
     <tr>
         <th>
@@ -23,19 +39,19 @@
         <th>
             @Html.DisplayName("Okładka")
         </th>
-        <th>
+        @*<th>
             @Html.DisplayName("Ulubiona")
         </th>
         <th>
-            @Html.DisplayName("Na półce")
+            @Html.DisplayName("Przeczytane")
         </th>
         <th>
             @Html.DisplayName("Do przeczytania")
-        </th>
+        </th>*@
         <th></th>
     </tr>
 
-            @foreach (var item in Model.Book)
+            @foreach (var item in Model)
             {
                 <tr>
                 <td>
@@ -51,15 +67,15 @@
                     @if (item.cover != null)
                     {<img src="~/img/covers/@item.cover" width="130" height="200" /> }
                 </td>
-                <td>
+                @*<td>
                     @Html.DisplayFor(modelItem => item.isFavorite)
                 </td>
                 <td>
-                    @Html.DisplayFor(modelItem => item.isOnShelf)
+                    @Html.DisplayFor(modelItem => item.isRead)
                 </td>
                 <td>
                     @Html.DisplayFor(modelItem => item.isOnWishList)
-                </td>
+                </td>*@
                 <td>
                     @Html.ActionLink("Edytuj", "Edit", new { id = item.id }) |
                     @Html.ActionLink("Szczegóły", "Details", new { id = item.id }) |

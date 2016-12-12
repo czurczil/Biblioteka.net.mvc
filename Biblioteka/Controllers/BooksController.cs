@@ -9,25 +9,77 @@ using System.Web.Mvc;
 using Biblioteka.Models;
 using Biblioteka.Models.Data_Models;
 using System.Configuration;
+using Microsoft.AspNet.Identity;
 
 namespace Biblioteka.Controllers
 {
     public class BooksController : Controller
     {
-        private Models.Database db = new Models.Database();
+        private ApplicationDbContext db = new ApplicationDbContext();
 
         // GET: Books
-        public ActionResult Index()
+        public ActionResult Index(string searchTitle, string searchAuthor, string BookGenre, string Sort)
         {
-             var BookView = new BookViewModel
-            {
-                Book = db.Books.ToList(),
-                Author = db.Authors.ToList(),
-                Genre = db.Genres.ToList(),
-                Series = db.Series.ToList()
-            };
+            var books = from m in db.Books select m;
 
-            return View(BookView);
+            var GenreLst = new List<string>();
+            var all_genres = from g in db.Genres select g.genre;
+            GenreLst.AddRange(all_genres);
+            ViewBag.BookGenre = new SelectList(GenreLst);
+
+            var sorting = new List<string>() { "Tytuł: alfabetycznie", "Tytuł: niealfabatycznie", "Rok wydania: rosnąco", "Rok wydania: malejąco" };
+            ViewBag.Sort = new SelectList(sorting);
+
+            if (!String.IsNullOrEmpty(searchTitle))
+            {
+                books = books.Where(s => s.title.Contains(searchTitle));
+            }
+
+            if (!String.IsNullOrEmpty(searchAuthor))
+            {
+                var GenreQry = from b in db.Books
+                               join ba in db.Book_Authors on b.id equals ba.BookId
+                               join a in db.Authors on ba.AuthorId equals a.id
+                               where a.firstName == searchAuthor || a.lastName == searchAuthor || a.firstName + " " + a.lastName == searchAuthor || a.lastName + " " + a.firstName == searchAuthor
+                               select b;
+                books = GenreQry;
+            }
+
+            if (!String.IsNullOrEmpty(BookGenre))
+            {
+                var GenreQry = from b in db.Books
+                               join bg in db.Book_Genres on b.id equals bg.BookId
+                               join g in db.Genres on bg.GenreId equals g.id
+                               where g.genre == BookGenre
+                               select b;
+                books = GenreQry;
+            }
+
+            if(!String.IsNullOrEmpty(Sort))
+            {
+                switch (Sort)
+                {
+                    case "Tytuł: alfabetycznie":
+                        books = books.OrderBy(b => b.title);
+                        break;
+                    case "Tytuł: niealfabatycznie":
+                        books = books.OrderByDescending(b => b.title);
+                        break;
+                    case "Rok wydania: rosnąco":
+                        books = books.OrderBy(b => b.year);
+                        break;
+                    case "Rok wydania: malejąco":
+                        books = books.OrderByDescending(b => b.year);
+                        break;
+                    default:
+                        break;
+                }
+
+            }
+
+
+
+            return View(books);
         }
 
         // GET: Books/Details/5
@@ -42,7 +94,42 @@ namespace Biblioteka.Controllers
             {
                 return HttpNotFound();
             }
-            return View(books);
+
+            var viewModel = new BookDetailsModel();
+
+            viewModel.Book = new Books
+            {
+                id = books.id,
+                title = books.title,
+                year = books.year,
+                description = books.description,
+                cover = books.cover
+                //isFavorite = books.isFavorite,
+                //isRead = books.isRead,
+                //isOnWishList = books.isOnWishList
+            };
+
+            var details = RelatedData(id);
+
+            viewModel.Details = details;
+
+            var user_books = db.User_Books.ToList();
+
+            string user_id = null;
+            if (User.Identity.IsAuthenticated)
+            {
+                user_id = User.Identity.GetUserId();
+            }
+
+            foreach (User_Books ub in user_books)
+                if (user_id == ub.User.Id && id == ub.BookId)
+                {
+                    viewModel.isFavorite = ub.isFavorite;
+                    viewModel.isOnWishList = ub.isOnWishList;
+                    viewModel.isRead = ub.isRead;
+                }
+
+            return View(viewModel);
         }
 
         // GET: Books/Create
@@ -216,10 +303,41 @@ namespace Biblioteka.Controllers
                 return HttpNotFound();
             }
 
-            var editModel = new CombinedDataModels
+            var editModel = new BookDetailsModel();
+
+            editModel.Book = new Books
             {
-                Books = db.Books.Find(id)
+                id = books.id,
+                title = books.title,
+                year = books.year,
+                description = books.description,
+                cover = books.cover
+                //isFavorite = books.isFavorite,
+                //isRead = books.isRead,
+                //isOnWishList = books.isOnWishList
             };
+
+            var details = RelatedData(id);
+
+            var user_books = db.User_Books.ToList();
+
+            string user_id = null;
+            if (User.Identity.IsAuthenticated)
+            {
+                user_id = User.Identity.GetUserId();
+            }
+
+            foreach (User_Books ub in user_books)
+                if (user_id == ub.User.Id && id == ub.BookId)
+                {
+                    editModel.isFavorite = ub.isFavorite;
+                    editModel.isOnWishList = ub.isOnWishList;
+                    editModel.isRead = ub.isRead;
+                }
+
+
+            editModel.Details = details;
+
             return View(editModel);
         }
 
@@ -228,23 +346,45 @@ namespace Biblioteka.Controllers
         // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Edit(CombinedDataModels editedBook)
+        public ActionResult Edit(BookDetailsModel editedBook)
         {
             if (ModelState.IsValid)
             {
-                var books = db.Books.Find(editedBook.Books.id);
-                books.title = editedBook.Books.title;
-                books.year = editedBook.Books.year;
-                books.description = editedBook.Books.description;
-                books.isFavorite = editedBook.Books.isFavorite;
-                books.isOnShelf = editedBook.Books.isOnShelf;
-                books.isOnWishList = editedBook.Books.isOnWishList;
+                var books = db.Books.Find(editedBook.Book.id);
+
+                books.title = editedBook.Book.title;
+                books.year = editedBook.Book.year;
+                books.description = editedBook.Book.description;
+                //books.isFavorite = editedBook.Book.isFavorite;
+                //books.isRead = editedBook.Book.isRead;
+                //books.isOnWishList = editedBook.Book.isOnWishList;
+
                 if(editedBook.cover != null)
                 {
                     books.cover = editedBook.cover.FileName;
                     editedBook.cover.SaveAs(HttpContext.Server.MapPath(ConfigurationManager.AppSettings["bookCovers"]) + books.cover);
                 }
-                
+
+                //foreach(var item in db.Book_Authors)
+                //{
+                //    if (item.BookId == editedBook.Book.id)
+                //    {
+                //        db.Entry(item).State = System.Data.Entity.EntityState.Deleted;
+                //    }
+                //}
+                string user_id = null;
+                if(User.Identity.IsAuthenticated)
+                {
+                    user_id = User.Identity.GetUserId();
+                }
+
+                foreach(var b in db.User_Books)
+                    if(b.BookId == editedBook.Book.id)
+                    {
+                        b.isFavorite = editedBook.isFavorite;
+                        b.isOnWishList = editedBook.isOnWishList;
+                        b.isRead = editedBook.isRead;
+                    }
 
                 db.Entry(books).State = EntityState.Modified;
                 db.SaveChanges();
@@ -281,7 +421,7 @@ namespace Biblioteka.Controllers
 
         public bool IsInDatabase(string data, string data2, int n)
         {
-            using (var context = new Models.Database())
+            using (var context = new Models.ApplicationDbContext())
             {
                 if (n == 0)
                 {
@@ -312,7 +452,7 @@ namespace Biblioteka.Controllers
 
         public bool BookIsBounded(long book_id, long second_id, int n)
         {
-            using (var context = new Models.Database())
+            using (var context = new Models.ApplicationDbContext())
             {
                 if (n == 0)
                 {
@@ -334,6 +474,78 @@ namespace Biblioteka.Controllers
                 }
             }
 
+        }
+
+        public List<BookDetailsList> RelatedData (long? id)
+        {
+
+            //var authors = from a in db.Authors
+            //              select new
+            //              {
+            //                  a.id,
+            //                  a.firstName,
+            //                  a.lastName,
+            //                  Checked = (from ab in db.Book_Authors
+            //                             where (ab.AuthorId == a.id) & (ab.BookId == id)
+            //                             select ab).Count() > 0
+            //              };
+            //var genres = from g in db.Genres
+            //             select new
+            //             {
+            //                 g.genre,
+            //                 Checked = (from bg in db.Book_Genres
+            //                            where (bg.GenreId == g.id) & (bg.BookId == id)
+            //                            select bg).Count() > 0
+            //             };
+            //var series = from s in db.Series
+            //             select new
+            //             {
+            //                 s.series,
+            //                 Chcecked = (from bs in db.Book_Series
+            //                             where (bs.SeriesId == s.id) & (bs.BookId == id)
+            //                             select bs).Count() > 0
+            //             };
+
+            //var details = new List<BookDetailsList>();
+
+            //foreach (var item in authors)
+            //{
+            //    details.Add(new BookDetailsList { Author = new Authors { id = item.id, firstName = item.firstName, lastName = item.lastName }, AuthorChecked = item.Checked });
+            //}
+            //foreach (var item in genres)
+            //{
+            //    details.Add(new BookDetailsList { Genre = new Genres { genre = item.genre }, GenreChecked = item.Checked });
+            //}
+            //foreach (var item in series)
+            //{
+            //    details.Add(new BookDetailsList { Series = new Series { series = item.series }, SeriesChecked = item.Chcecked });
+            //}
+
+            var details = new List<BookDetailsList>();
+
+            var author = db.Authors.ToList();
+            var book_authors = db.Book_Authors.ToList();
+            var genres = db.Genres.ToList();
+            var book_genres = db.Book_Genres.ToList();
+            var series = db.Series.ToList();
+            var book_series = db.Book_Series.ToList();
+
+                foreach (Authors a in author)
+                    foreach (Book_Authors ba in book_authors)
+                        if (id == ba.BookId && a.id == ba.AuthorId)
+                                details.Add(new BookDetailsList { Author = new Authors { id = a.id, firstName = a.firstName, lastName = a.lastName }, AuthorChecked = true });
+
+                foreach (Genres g in genres)
+                    foreach (Book_Genres bg in book_genres)
+                        if (g.id == bg.GenreId && id == bg.BookId)
+                                details.Add(new BookDetailsList { Genre = new Genres { genre = g.genre }, GenreChecked = true });
+
+                foreach (Series s in series)
+                    foreach (Book_Series bs in book_series)
+                        if (s.id == bs.SeriesId && id == bs.BookId)
+                                details.Add(new BookDetailsList { Series = new Series { series = s.series }, SeriesChecked = true });
+
+            return details;
         }
 
         protected override void Dispose(bool disposing)

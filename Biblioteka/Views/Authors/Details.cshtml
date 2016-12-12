@@ -1,4 +1,4 @@
-﻿@model Biblioteka.Models.Data_Models.Authors
+﻿@model Biblioteka.Models.AuthorDetailsModel
 
 @{
     ViewBag.Title = "Details";
@@ -15,7 +15,7 @@
         </dt>
 
         <dd>
-            @Html.DisplayFor(model => model.firstName)
+            @Html.DisplayFor(model => model.Author.firstName)
         </dd>
 
         <dt>
@@ -23,7 +23,7 @@
         </dt>
 
         <dd>
-            @Html.DisplayFor(model => model.lastName)
+            @Html.DisplayFor(model => model.Author.lastName)
         </dd>
 
         <dt>
@@ -31,7 +31,7 @@
         </dt>
 
         <dd>
-            @Html.DisplayFor(model => model.birthDate)
+            @Html.DisplayFor(model => model.Author.birthDate)
         </dd>
 
         <dt>
@@ -39,7 +39,7 @@
         </dt>
 
         <dd>
-            @Html.DisplayFor(model => model.sex)
+            @Html.DisplayFor(model => model.Author.sex)
         </dd>
 
         <dt>
@@ -47,7 +47,7 @@
         </dt>
 
         <dd>
-            @Html.DisplayFor(model => model.birthPlace)
+            @Html.DisplayFor(model => model.Author.birthPlace)
         </dd>
 
         <dt>
@@ -55,7 +55,7 @@
         </dt>
 
         <dd>
-            @Html.DisplayFor(model => model.BIO)
+            @Html.DisplayFor(model => model.Author.BIO)
         </dd>
 
         <dt>
@@ -63,15 +63,35 @@
         </dt>
 
         <dd>
-            @if (Model.photo != null)
+            @if (Model.Author.photo != null)
             {
-                <img src="~/img/photos/@Model.photo" width="130" height="200" />
+                <img src="~/img/photos/@Model.Author.photo" width="130" height="200" />
+            }
+        </dd>
+
+        <dt>
+            @Html.DisplayName("Książki")
+        </dt>
+
+
+        <dd>
+            <br />
+            @foreach (var item in Model.Books)
+            {
+                if (item.BooksChecked)
+                {
+                    @Html.ActionLink(item.Books.title, "Index", "Books", new { searchTitle = item.Books.title }, null)
+                    if (item.Books.cover != null)
+                    {
+                        <img src="~/img/covers/@item.Books.cover" width="130" height="200" />
+                    }
+                }
             }
         </dd>
 
     </dl>
 </div>
 <p>
-    @Html.ActionLink("Edytuj", "Edit", new { id = Model.id }) |
+    @Html.ActionLink("Edytuj", "Edit", new { id = Model.Author.id }) |
     @Html.ActionLink("Powrót", "Index")
 </p>
