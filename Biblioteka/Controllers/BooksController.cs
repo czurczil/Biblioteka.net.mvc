@@ -18,9 +18,44 @@ namespace Biblioteka.Controllers
         private ApplicationDbContext db = new ApplicationDbContext();
 
         // GET: Books
-        public ActionResult Index(string searchTitle, string searchAuthor, string BookGenre, string Sort)
+        public ActionResult Index(string searchTitle, string searchAuthor, string BookGenre, string Sort, string MyBooks)
         {
-            var books = from m in db.Books select m;
+            string user_id = null;
+            if (User.Identity.IsAuthenticated)
+            {
+                user_id = User.Identity.GetUserId();
+            }
+
+
+            IQueryable<Books> books;
+            if (String.IsNullOrEmpty(MyBooks))
+            {
+                books = from m in db.Books select m;
+            }
+            else
+            {
+                if (MyBooks.Equals("isFavorite"))
+                {
+                    books = from b in db.Books
+                            join ub in db.User_Books on b.id equals ub.BookId
+                            where ub.isFavorite == true & ub.UserId == user_id
+                            select b;
+                }
+                else if (MyBooks.Equals("isRead"))
+                {
+                    books = from b in db.Books
+                            join ub in db.User_Books on b.id equals ub.BookId
+                            where ub.isRead == true & ub.UserId == user_id
+                            select b;
+                }
+                else
+                {
+                    books = from b in db.Books
+                            join ub in db.User_Books on b.id equals ub.BookId
+                            where ub.isOnWishList == true & ub.UserId == user_id
+                            select b;
+                }
+            }
 
             var GenreLst = new List<string>();
             var all_genres = from g in db.Genres select g.genre;
@@ -77,8 +112,6 @@ namespace Biblioteka.Controllers
 
             }
 
-
-
             return View(books);
         }
 
@@ -104,9 +137,6 @@ namespace Biblioteka.Controllers
                 year = books.year,
                 description = books.description,
                 cover = books.cover
-                //isFavorite = books.isFavorite,
-                //isRead = books.isRead,
-                //isOnWishList = books.isOnWishList
             };
 
             var details = RelatedData(id);
@@ -119,15 +149,21 @@ namespace Biblioteka.Controllers
             if (User.Identity.IsAuthenticated)
             {
                 user_id = User.Identity.GetUserId();
-            }
 
-            foreach (User_Books ub in user_books)
-                if (user_id == ub.User.Id && id == ub.BookId)
-                {
-                    viewModel.isFavorite = ub.isFavorite;
-                    viewModel.isOnWishList = ub.isOnWishList;
-                    viewModel.isRead = ub.isRead;
-                }
+                foreach (User_Books ub in user_books)
+                    if (user_id == ub.UserId && id == ub.BookId)
+                    {
+                        viewModel.isFavorite = ub.isFavorite;
+                        viewModel.isOnWishList = ub.isOnWishList;
+                        viewModel.isRead = ub.isRead;
+                    }
+            }
+            else
+            {
+                viewModel.isFavorite = false;
+                viewModel.isOnWishList = false;
+                viewModel.isRead = false;
+            }
 
             return View(viewModel);
         }
@@ -312,9 +348,6 @@ namespace Biblioteka.Controllers
                 year = books.year,
                 description = books.description,
                 cover = books.cover
-                //isFavorite = books.isFavorite,
-                //isRead = books.isRead,
-                //isOnWishList = books.isOnWishList
             };
 
             var details = RelatedData(id);
@@ -325,15 +358,21 @@ namespace Biblioteka.Controllers
             if (User.Identity.IsAuthenticated)
             {
                 user_id = User.Identity.GetUserId();
-            }
 
-            foreach (User_Books ub in user_books)
-                if (user_id == ub.User.Id && id == ub.BookId)
-                {
-                    editModel.isFavorite = ub.isFavorite;
-                    editModel.isOnWishList = ub.isOnWishList;
-                    editModel.isRead = ub.isRead;
-                }
+                foreach (User_Books ub in user_books)
+                    if (user_id == ub.UserId && id == ub.BookId)
+                    {
+                        editModel.isFavorite = ub.isFavorite;
+                        editModel.isOnWishList = ub.isOnWishList;
+                        editModel.isRead = ub.isRead;
+                    }
+            }
+            else
+            {
+                editModel.isFavorite = false;
+                editModel.isOnWishList = false;
+                editModel.isRead = false;
+            }
 
 
             editModel.Details = details;
@@ -355,9 +394,7 @@ namespace Biblioteka.Controllers
                 books.title = editedBook.Book.title;
                 books.year = editedBook.Book.year;
                 books.description = editedBook.Book.description;
-                //books.isFavorite = editedBook.Book.isFavorite;
-                //books.isRead = editedBook.Book.isRead;
-                //books.isOnWishList = editedBook.Book.isOnWishList;
+
 
                 if(editedBook.cover != null)
                 {
@@ -365,26 +402,24 @@ namespace Biblioteka.Controllers
                     editedBook.cover.SaveAs(HttpContext.Server.MapPath(ConfigurationManager.AppSettings["bookCovers"]) + books.cover);
                 }
 
-                //foreach(var item in db.Book_Authors)
-                //{
-                //    if (item.BookId == editedBook.Book.id)
-                //    {
-                //        db.Entry(item).State = System.Data.Entity.EntityState.Deleted;
-                //    }
-                //}
                 string user_id = null;
-                if(User.Identity.IsAuthenticated)
+
+                if (User.Identity.IsAuthenticated)
                 {
                     user_id = User.Identity.GetUserId();
-                }
 
-                foreach(var b in db.User_Books)
-                    if(b.BookId == editedBook.Book.id)
+                    foreach (var item in db.User_Books)
                     {
-                        b.isFavorite = editedBook.isFavorite;
-                        b.isOnWishList = editedBook.isOnWishList;
-                        b.isRead = editedBook.isRead;
+                        if (item.BookId == editedBook.Book.id && item.UserId == user_id)
+                        {
+                            db.Entry(item).State = EntityState.Deleted;
+                        }
                     }
+                    var user_books = new User_Books() { UserId = user_id, BookId = editedBook.Book.id, isFavorite = editedBook.isFavorite,
+                                                        isOnWishList = editedBook.isOnWishList, isRead = editedBook.isRead};
+
+                    db.User_Books.Add(user_books);
+                }
 
                 db.Entry(books).State = EntityState.Modified;
                 db.SaveChanges();
@@ -478,69 +513,28 @@ namespace Biblioteka.Controllers
 
         public List<BookDetailsList> RelatedData (long? id)
         {
-
-            //var authors = from a in db.Authors
-            //              select new
-            //              {
-            //                  a.id,
-            //                  a.firstName,
-            //                  a.lastName,
-            //                  Checked = (from ab in db.Book_Authors
-            //                             where (ab.AuthorId == a.id) & (ab.BookId == id)
-            //                             select ab).Count() > 0
-            //              };
-            //var genres = from g in db.Genres
-            //             select new
-            //             {
-            //                 g.genre,
-            //                 Checked = (from bg in db.Book_Genres
-            //                            where (bg.GenreId == g.id) & (bg.BookId == id)
-            //                            select bg).Count() > 0
-            //             };
-            //var series = from s in db.Series
-            //             select new
-            //             {
-            //                 s.series,
-            //                 Chcecked = (from bs in db.Book_Series
-            //                             where (bs.SeriesId == s.id) & (bs.BookId == id)
-            //                             select bs).Count() > 0
-            //             };
-
-            //var details = new List<BookDetailsList>();
-
-            //foreach (var item in authors)
-            //{
-            //    details.Add(new BookDetailsList { Author = new Authors { id = item.id, firstName = item.firstName, lastName = item.lastName }, AuthorChecked = item.Checked });
-            //}
-            //foreach (var item in genres)
-            //{
-            //    details.Add(new BookDetailsList { Genre = new Genres { genre = item.genre }, GenreChecked = item.Checked });
-            //}
-            //foreach (var item in series)
-            //{
-            //    details.Add(new BookDetailsList { Series = new Series { series = item.series }, SeriesChecked = item.Chcecked });
-            //}
-
             var details = new List<BookDetailsList>();
 
             var author = db.Authors.ToList();
             var book_authors = db.Book_Authors.ToList();
-            var genres = db.Genres.ToList();
-            var book_genres = db.Book_Genres.ToList();
-            var series = db.Series.ToList();
-            var book_series = db.Book_Series.ToList();
 
-                foreach (Authors a in author)
+            foreach (Authors a in author)
                     foreach (Book_Authors ba in book_authors)
                         if (id == ba.BookId && a.id == ba.AuthorId)
                                 details.Add(new BookDetailsList { Author = new Authors { id = a.id, firstName = a.firstName, lastName = a.lastName }, AuthorChecked = true });
 
-                foreach (Genres g in genres)
+            var genres = db.Genres.ToList();
+            var book_genres = db.Book_Genres.ToList();
+
+            foreach (Genres g in genres)
                     foreach (Book_Genres bg in book_genres)
                         if (g.id == bg.GenreId && id == bg.BookId)
                                 details.Add(new BookDetailsList { Genre = new Genres { genre = g.genre }, GenreChecked = true });
 
-                foreach (Series s in series)
+            var series = db.Series.ToList();
+            var book_series = db.Book_Series.ToList();
+
+            foreach (Series s in series)
                     foreach (Book_Series bs in book_series)
                         if (s.id == bs.SeriesId && id == bs.BookId)
                                 details.Add(new BookDetailsList { Series = new Series { series = s.series }, SeriesChecked = true });

@@ -10,7 +10,9 @@ namespace Biblioteka.Models.Data_Models
     {
         public long id { get; set; }
 
-        public ApplicationUser User { get; set; }
+        [ForeignKey("UserId")]
+        public virtual ApplicationUser User { get; set; }
+        public string UserId { get; set; }
        // public string UserId { get; set; }
 
         [ForeignKey("BookId")]

@@ -1,4 +1,5 @@
-﻿<!DOCTYPE html>
+﻿@using Microsoft.AspNet.Identity
+<!DOCTYPE html>
 <html>
 <head>
     <meta charset="utf-8" />
@@ -25,6 +26,20 @@
                     <li>@Html.ActionLink("Autorzy", "Index", "Authors")</li>
                     <li>@Html.ActionLink("Gatunki", "Index", "Genres")</li>
                     <li>@Html.ActionLink("Cykle", "Index", "Series")</li>
+                    @if (Request.IsAuthenticated)
+                    {
+                        <li class="dropdown">
+                            <a class="dropdown-toggle" data-toggle="dropdown" href="#">
+                                Moje
+                                <span class="caret"></span>
+                            </a>
+                            <ul class="dropdown-menu" role="menu">
+                                <li>@Html.ActionLink("Ulubione", "Index", "Books", new { MyBooks = "isFavorite" }, null)</li>
+                                <li>@Html.ActionLink("Przeczytane", "Index", "Books", new { MyBooks = "isRead" }, null)</li>
+                                <li>@Html.ActionLink("Do przeczytania", "Index", "Books", new { MyBooks = "isOnWishList" }, null)</li>
+                            </ul>
+                        </li>
+                    }
                     @*<li>@Html.ActionLink("O mnie", "About", "Home")</li>
                       <li>@Html.ActionLink("Kontakt", "Contact", "Home")</li>*@
                     <li>@Html.ActionLink("Dodaj książkę", "Create", "Books")</li>

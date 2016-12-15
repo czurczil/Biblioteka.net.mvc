@@ -1,4 +1,5 @@
 ﻿@model Biblioteka.Models.BookDetailsModel
+@using Microsoft.AspNet.Identity
 
 @{
     ViewBag.Title = "Szczegóły";
@@ -88,30 +89,32 @@
             }
         }
 
-       @* <dt>
-        @Html.DisplayName("Ulubione")
-    </dt>
+        @if (Request.IsAuthenticated)
+        {
+            <dt>
+                @Html.DisplayName("Ulubione")
+            </dt>
 
-    <dd>
-        @Html.DisplayFor(model => model.isFavorite)
-    </dd>
+            <dd>
+                @Html.DisplayFor(model => model.isFavorite)
+            </dd>
 
-    <dt>
-        @Html.DisplayName("Przeczytane")
-    </dt>
+            <dt>
+                @Html.DisplayName("Przeczytane")
+            </dt>
 
-    <dd>
-        @Html.DisplayFor(model => model.Book.isRead)
-    </dd>
+            <dd>
+                @Html.DisplayFor(model => model.isRead)
+            </dd>
 
-    <dt>
-        @Html.DisplayName("Do przeczytania")
-    </dt>
+            <dt>
+                @Html.DisplayName("Do przeczytania")
+            </dt>
 
-    <dd>
-        @Html.DisplayFor(model => model.Book.isOnWishList)
-    </dd>*@
-
+            <dd>
+                @Html.DisplayFor(model => model.isOnWishList)
+            </dd>
+        }
     </dl>
 </div>
 <p>
