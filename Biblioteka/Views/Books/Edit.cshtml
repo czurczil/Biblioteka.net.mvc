@@ -18,7 +18,7 @@
         @Html.HiddenFor(model => model.Book.id)
 
         <div class="form-group">
-            @Html.Label("Tytuł", htmlAttributes: new { @class = "control-label col-md-2" })
+            @Html.LabelFor(model => model.Book.title, htmlAttributes: new { @class = "control-label col-md-2" })
             <div class="col-md-10">
                 @Html.EditorFor(model => model.Book.title, new { htmlAttributes = new { @class = "form-control" } })
                 @Html.ValidationMessageFor(model => model.Book.title, "", new { @class = "text-danger" })
@@ -26,7 +26,7 @@
         </div>
 
         <div class="form-group">
-            @Html.Label("Rok wydania", htmlAttributes: new { @class = "control-label col-md-2" })
+            @Html.LabelFor(model => model.Book.year, htmlAttributes: new { @class = "control-label col-md-2" })
             <div class="col-md-10">
                 @Html.EditorFor(model => model.Book.year, new { htmlAttributes = new { @class = "form-control" } })
                 @Html.ValidationMessageFor(model => model.Book.year, "", new { @class = "text-danger" })
@@ -34,7 +34,7 @@
         </div>
 
         <div class="form-group">
-            @Html.Label("Opis", htmlAttributes: new { @class = "control-label col-md-2" })
+            @Html.LabelFor(model => model.Book.description, htmlAttributes: new { @class = "control-label col-md-2" })
             <div class="col-md-10">
                 @Html.EditorFor(model => model.Book.description, new { htmlAttributes = new { @class = "form-control" } })
                 @Html.ValidationMessageFor(model => model.Book.description, "", new { @class = "text-danger" })
@@ -42,7 +42,7 @@
         </div>
 
         <div class="form-group">
-            @Html.Label("Okładka", htmlAttributes: new { @class = "control-label col-md-2" })
+            @Html.LabelFor(model => model.cover, htmlAttributes: new { @class = "control-label col-md-2" })
             <div class="col-md-10">
                 @if (Model.Book.cover != null)
                 {
@@ -61,13 +61,14 @@
                 {
                     <div class="col-md-10">
                         @item.Author.firstName
-
                         @item.Author.lastName
+                        @Html.ActionLink("Usuń", "DeleteRelation", "Authors", new { book_id = Model.Book.id, fname = item.Author.firstName, lname = item.Author.lastName }, null)
                     </div>
                 }
-
             }
-
+            <div class="col-md-offset-2 col-md-10">
+                @Html.ActionLink("Dodaj autora", "Create", "Authors", new { book_id = Model.Book.id }, new { @class = "btn btn-default" })
+            </div>
         </div>
 
         <div class="form-group">
@@ -78,12 +79,15 @@
                 {
                     <div class="col-md-10">
                         @item.Genre.genre
+                        @Html.ActionLink("Usuń", "DeleteRelation", "Genres", new { book_id = Model.Book.id, genre = item.Genre.genre }, null)
                     </div>
+                    
                 }
-
             }
-
-        </div>
+            <div class="col-md-offset-2 col-md-10">
+                @Html.ActionLink("Dodaj gatunek", "Create", "Genres", new { book_id = Model.Book.id }, new { @class = "btn btn-default" })
+            </div>
+            </div>
 
         <div class="form-group">
             @Html.Label("Cykle", htmlAttributes: new { @class = "control-label col-md-2" })
@@ -92,13 +96,16 @@
                 if (item.SeriesChecked)
                 {
                     <div class="col-md-10">
-                    @item.Series.series
+                        @item.Series.series
+                        @Html.ActionLink("Usuń", "DeleteRelation", "Series", new { book_id = Model.Book.id, series = item.Series.series }, null)
                     </div>
                 }
 
             }
-
-        </div>
+            <div class="col-md-offset-2 col-md-10">
+                @Html.ActionLink("Dodaj cykl", "Create", "Series", new { book_id = Model.Book.id }, new { @class = "btn btn-default" })
+            </div>
+            </div>
 
         @if (Request.IsAuthenticated)
         {
@@ -129,6 +136,22 @@
                         @Html.EditorFor(model => model.isOnWishList)
                         @Html.ValidationMessageFor(model => model.isOnWishList, "", new { @class = "text-danger" })
                     </div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                @Html.Label("Ocena", htmlAttributes: new { @class = "control-label col-md-2" })
+                <div class="col-md-10">
+                    @Html.DropDownList("Rating", "")
+                    @Html.ValidationMessageFor(model => model.rating, "", new { @class = "text-danger" })
+                </div>
+            </div>
+
+            <div class="form-group">
+                @Html.Label("Komentarz", htmlAttributes: new { @class = "control-label col-md-2" })
+                <div class="col-md-10">
+                    @Html.EditorFor(model => model.comment ,new { htmlAttributes = new { @class = "form-control" } })
+                    @Html.ValidationMessageFor(model => model.comment, "", new { @class = "text-danger" })
                 </div>
             </div>
         }

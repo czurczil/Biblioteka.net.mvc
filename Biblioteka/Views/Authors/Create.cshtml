@@ -4,6 +4,20 @@
     ViewBag.Title = "Create";
 }
 
+@{
+    List<SelectListItem> listItems = new List<SelectListItem>();
+    listItems.Add(new SelectListItem
+    {
+        Text = "Mężczyzna",
+        Value = "Mężczyzna"
+    });
+    listItems.Add(new SelectListItem
+    {
+        Text = "Kobieta",
+        Value = "Kobieta"
+    });
+}
+
 <h2>Dodaj autora</h2>
 
 @using (Html.BeginForm()) 
@@ -39,8 +53,7 @@
         <div class="form-group">
             @Html.Label("Płeć", htmlAttributes: new { @class = "control-label col-md-2" })
             <div class="col-md-10">
-                @Html.EditorFor(model => model.sex, new { htmlAttributes = new { @class = "form-control" } })
-                @Html.ValidationMessageFor(model => model.sex, "", new { @class = "text-danger" })
+                @Html.DropDownListFor(model => model.sex, listItems, "-- Wybierz płeć --", new { @class = "form-control" })
             </div>
         </div>
 
@@ -63,7 +76,7 @@
         <div class="form-group">
             @Html.Label("Zdjęcie", htmlAttributes: new { @class = "control-label col-md-2" })
             <div class="col-md-10">
-                @Html.EditorFor(model => model.photo, new { htmlAttributes = new { @class = "form-control" } })
+                <input id="photo" type="file" name="photo" />
                 @Html.ValidationMessageFor(model => model.photo, "", new { @class = "text-danger" })
             </div>
         </div>

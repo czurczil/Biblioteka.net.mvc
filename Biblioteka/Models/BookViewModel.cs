@@ -14,6 +14,8 @@ namespace Biblioteka.Models
         public bool isFavorite { get; set; }
         public bool isRead { get; set; }
         public bool isOnWishList { get; set; }
+        public int rating { get; set; }
+        public string comment { get; set; }
 
         public HttpPostedFileBase cover { get; set; }
     }

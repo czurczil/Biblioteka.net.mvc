@@ -47,16 +47,40 @@ namespace Biblioteka.Controllers
         // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Create([Bind(Include = "id,series")] Series series)
+        public ActionResult Create(long book_id,[Bind(Include ="id,series")] Series serie)
         {
             if (ModelState.IsValid)
             {
-                db.Series.Add(series);
-                db.SaveChanges();
-                return RedirectToAction("Index");
+                long series_id;
+                BooksController bc = new BooksController();
+
+                if (bc.IsInDatabase(serie.series, null, 2) == false)
+                {
+                    db.Series.Add(serie);
+
+                    db.SaveChanges();
+
+                    series_id = serie.id;
+                }
+                else series_id = db.Series.Where(s => s.series == serie.series).Select(s => s.id).First();
+
+                if (book_id != 0)
+                {
+                    Book_Series bs = new Book_Series()
+                    {
+                        BookId = book_id,
+                        SeriesId = series_id
+                    };
+
+                    db.Book_Series.Add(bs);
+
+                    db.TrySaveChanges();
+                }
+
+                return RedirectToAction("Details", "Books", new { id = book_id });
             }
 
-            return View(series);
+            return View(serie);
         }
 
         // GET: Series/Edit/5
@@ -114,6 +138,15 @@ namespace Biblioteka.Controllers
             db.Series.Remove(series);
             db.SaveChanges();
             return RedirectToAction("Index");
+        }
+
+        public ActionResult DeleteRelation(long book_id, string series)
+        {
+            long id = db.Series.Where(s => s.series == series).Select(s => s.id).First();
+            Book_Series bs = db.Book_Series.Where(s => s.SeriesId == id && s.BookId == book_id).First();
+            db.Book_Series.Remove(bs);
+            db.TrySaveChanges();
+            return RedirectToAction("Details", "Books", new { id = book_id });
         }
 
         protected override void Dispose(bool disposing)

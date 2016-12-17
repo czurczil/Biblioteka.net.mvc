@@ -114,6 +114,22 @@
             <dd>
                 @Html.DisplayFor(model => model.isOnWishList)
             </dd>
+
+            <dt>
+                @Html.DisplayName("Ocena")
+            </dt>
+
+            <dd>
+                @Html.DisplayFor(model => model.rating)/10
+            </dd>
+
+            <dt>
+                @Html.DisplayName("Komentarz")
+            </dt>
+
+            <dd>
+                @Html.DisplayFor(model => model.comment)
+            </dd>
         }
     </dl>
 </div>

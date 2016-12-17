@@ -47,13 +47,37 @@ namespace Biblioteka.Controllers
         // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Create([Bind(Include = "id,genre")] Genres genres)
+        public ActionResult Create(long book_id,[Bind(Include = "id,genre")] Genres genres)
         {
             if (ModelState.IsValid)
             {
-                db.Genres.Add(genres);
-                db.SaveChanges();
-                return RedirectToAction("Index");
+                long genre_id;
+                BooksController bc = new BooksController();
+
+                if (bc.IsInDatabase(genres.genre,null,1) == false)
+                {
+                    db.Genres.Add(genres);
+
+                    db.SaveChanges();
+
+                    genre_id = genres.id;
+                }
+                else genre_id = db.Genres.Where(g => g.genre == genres.genre).Select(g => g.id).First();
+
+                if (book_id != 0)
+                {
+                    Book_Genres bg = new Book_Genres()
+                    {
+                        BookId = book_id,
+                        GenreId = genre_id
+                    };
+
+                    db.Book_Genres.Add(bg);
+
+                    db.TrySaveChanges();
+                }
+
+                return RedirectToAction("Details", "Books", new { id = book_id });
             }
 
             return View(genres);
@@ -114,6 +138,15 @@ namespace Biblioteka.Controllers
             db.Genres.Remove(genres);
             db.SaveChanges();
             return RedirectToAction("Index");
+        }
+
+        public ActionResult DeleteRelation(long book_id, string genre)
+        {
+            long id = db.Genres.Where(g => g.genre == genre).Select(g => g.id).First();
+            Book_Genres bg = db.Book_Genres.Where(b => b.GenreId == id && b.BookId == book_id).First();
+            db.Book_Genres.Remove(bg);
+            db.TrySaveChanges();
+            return RedirectToAction("Details", "Books", new { id = book_id });
         }
 
         protected override void Dispose(bool disposing)

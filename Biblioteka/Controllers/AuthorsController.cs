@@ -99,13 +99,37 @@ namespace Biblioteka.Controllers
         // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Create([Bind(Include = "id,firstName,lastName,birthDate,sex,birthPlace,BIO,photo")] Authors authors)
+        public ActionResult Create(long book_id,[Bind(Include = "id,firstName,lastName,birthDate,sex,birthPlace,BIO,photo")]Authors authors)
         {
             if (ModelState.IsValid)
             {
-                db.Authors.Add(authors);
-                db.SaveChanges();
-                return RedirectToAction("Index");
+                long author_id;
+                BooksController bc = new BooksController();
+
+                if (bc.IsInDatabase(authors.firstName, authors.lastName, 3) == false)
+                {
+                    db.Authors.Add(authors);
+
+                    db.SaveChanges();
+
+                    author_id = authors.id;
+                }
+                else author_id = db.Authors.Where(a => a.firstName == authors.firstName && a.lastName == authors.lastName).Select(a => a.id).First();
+
+                if (book_id != 0)
+                {
+                    Book_Authors bk = new Book_Authors()
+                    {
+                        BookId = book_id,
+                        AuthorId = author_id
+                    };
+
+                    db.Book_Authors.Add(bk);
+
+                    db.TrySaveChanges();
+                }
+
+                return RedirectToAction("Details", "Books", new { id = book_id });
             }
 
             return View(authors);
@@ -201,22 +225,17 @@ namespace Biblioteka.Controllers
             return RedirectToAction("Index");
         }
 
+        public ActionResult DeleteRelation(long book_id, string fname, string lname)
+        {
+            long id = db.Authors.Where(a => a.firstName == fname && a.lastName == lname).Select(a => a.id).First();
+            Book_Authors ba = db.Book_Authors.Where(a => a.AuthorId == id && a.BookId == book_id).First();
+            db.Book_Authors.Remove(ba);
+            db.TrySaveChanges();
+            return RedirectToAction("Details", "Books", new { id = book_id });
+        }
+
         public List<AuthorDetailsList> RelatedData(long? id)
         {
-            //var books = from b in db.Books
-            //             select new
-            //             {
-            //                 b.title,
-            //                 b.cover,
-            //                 Checked = (from ba in db.Book_Authors
-            //                            where (ba.BookId == b.id) & (ba.AuthorId == id)
-            //                            select ba).Count() > 0
-            //             };
-            //foreach (var item in books)
-            //{
-            //    details.Add(new AuthorDetailsList { Books = new Books { title = item.title, cover = item.cover }, BooksChecked = item.Checked });
-            //}
-
             var details = new List<AuthorDetailsList>();
 
             var books = db.Books.ToList();

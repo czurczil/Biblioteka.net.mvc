@@ -16,11 +16,4 @@ namespace Biblioteka.Models
         public HttpPostedFileBase cover { get; set; }
         public HttpPostedFileBase photo { get; set; }
     }
-    public class CombinedListDataModels
-    {
-        public List<Books> Books { get; set; }
-        public List<Authors> Authors { get; set; }
-        public List<Genres> Genres { get; set; }
-        public List<Series> Series { get; set; }
-    }
 }
