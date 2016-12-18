@@ -34,9 +34,9 @@
                                 <span class="caret"></span>
                             </a>
                             <ul class="dropdown-menu" role="menu">
-                                <li>@Html.ActionLink("Ulubione", "Index", "Books", new { MyBooks = "isFavorite" }, null)</li>
-                                <li>@Html.ActionLink("Przeczytane", "Index", "Books", new { MyBooks = "isRead" }, null)</li>
-                                <li>@Html.ActionLink("Do przeczytania", "Index", "Books", new { MyBooks = "isOnWishList" }, null)</li>
+                                <li>@Html.ActionLink("Ulubione", "Favorite", "Books")</li>
+                                <li>@Html.ActionLink("Przeczytane", "Read", "Books")</li>
+                                <li>@Html.ActionLink("Do przeczytania", "OnWishList", "Books")</li>
                             </ul>
                         </li>
                     }

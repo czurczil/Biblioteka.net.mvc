@@ -16,9 +16,10 @@ namespace Biblioteka.Controllers
     public class BooksController : Controller
     {
         private ApplicationDbContext db = new ApplicationDbContext();
+        List<string> sorting = new List<string>() { "Tytuł: alfabetycznie", "Tytuł: niealfabatycznie", "Rok wydania: rosnąco", "Rok wydania: malejąco" };
 
         // GET: Books
-        public ActionResult Index(string searchTitle, string searchAuthor, string BookGenre, string Sort, string MyBooks)
+        public ActionResult Index(string searchTitle, string searchAuthor, string BookGenre, string Sort)
         {
             string user_id = null;
             if (User.Identity.IsAuthenticated)
@@ -26,89 +27,23 @@ namespace Biblioteka.Controllers
                 user_id = User.Identity.GetUserId();
             }
 
-            IQueryable<Books> books;
-            
-            if (String.IsNullOrEmpty(MyBooks))
-            {
-                books = from m in db.Books select m;
-            }
-            else
-            {
-                if (MyBooks.Equals("isFavorite"))
-                {
-                    books = from b in db.Books
-                            join ub in db.User_Books on b.id equals ub.BookId
-                            where ub.isFavorite == true & ub.UserId == user_id
-                            select b;
-                }
-                else if (MyBooks.Equals("isRead"))
-                {
-                    books = from b in db.Books
-                            join ub in db.User_Books on b.id equals ub.BookId
-                            where ub.isRead == true & ub.UserId == user_id
-                            select b;
-                }
-                else
-                {
-                    books = from b in db.Books
-                            join ub in db.User_Books on b.id equals ub.BookId
-                            where ub.isOnWishList == true & ub.UserId == user_id
-                            select b;
-                }
-            }
+            IQueryable<Books> books = from m in db.Books select m;
 
-            var GenreLst = new List<string>();
-            var all_genres = from g in db.Genres select g.genre;
-            GenreLst.AddRange(all_genres);
-            ViewBag.BookGenre = new SelectList(GenreLst);
-
-            var sorting = new List<string>() { "Tytuł: alfabetycznie", "Tytuł: niealfabatycznie", "Rok wydania: rosnąco", "Rok wydania: malejąco" };
-            ViewBag.Sort = new SelectList(sorting);
+            GetGenreList();
 
             if (!String.IsNullOrEmpty(searchTitle))
-            {
-                books = books.Where(s => s.title.Contains(searchTitle));
-            }
+                books = FindByTitle(books, searchTitle);
 
             if (!String.IsNullOrEmpty(searchAuthor))
-            {
-                books = from b in db.Books
-                        join ba in db.Book_Authors on b.id equals ba.BookId
-                        join a in db.Authors on ba.AuthorId equals a.id
-                        where a.firstName == searchAuthor || a.lastName == searchAuthor || a.firstName + " " + a.lastName == searchAuthor || a.lastName + " " + a.firstName == searchAuthor
-                        select b;
-            }
+                books = FindByAuthor(books, searchAuthor);
 
             if (!String.IsNullOrEmpty(BookGenre))
-            {
-                books = from b in db.Books
-                        join bg in db.Book_Genres on b.id equals bg.BookId
-                        join g in db.Genres on bg.GenreId equals g.id
-                        where g.genre == BookGenre
-                        select b;
-            }
+                books = FindByGenre(books, BookGenre);
 
-            if(!String.IsNullOrEmpty(Sort))
-            {
-                switch (Sort)
-                {
-                    case "Tytuł: alfabetycznie":
-                        books = books.OrderBy(b => b.title);
-                        break;
-                    case "Tytuł: niealfabatycznie":
-                        books = books.OrderByDescending(b => b.title);
-                        break;
-                    case "Rok wydania: rosnąco":
-                        books = books.OrderBy(b => b.year);
-                        break;
-                    case "Rok wydania: malejąco":
-                        books = books.OrderByDescending(b => b.year);
-                        break;
-                    default:
-                        break;
-                }
+            if (!String.IsNullOrEmpty(Sort))
+                books = GetSortingList(books, Sort);
 
-            }
+            ViewBag.Sort = new SelectList(sorting);
 
             return View(books);
         }
@@ -339,11 +274,6 @@ namespace Biblioteka.Controllers
 
             var editModel = new BookDetailsModel();
 
-            var RatingList = new List<int>();
-            for (int i = 0; i < 11; i++)
-                RatingList.Add(i);
-            ViewBag.Rating = new SelectList(RatingList);
-
             editModel.Book = new Books
             {
                 id = books.id,
@@ -356,6 +286,8 @@ namespace Biblioteka.Controllers
             var details = RelatedData(id);
 
             var user_books = db.User_Books.ToList();
+
+            int rate = 0;
 
             string user_id = null;
             if (User.Identity.IsAuthenticated)
@@ -370,9 +302,15 @@ namespace Biblioteka.Controllers
                         editModel.isRead = ub.isRead;
                         editModel.rating = ub.rating;
                         editModel.comment = ub.comment;
+
+                        rate = ub.rating;
                     }
             }
 
+            var RatingList = new List<int>();
+            for (int i = 0; i < 11; i++)
+                RatingList.Add(i);
+            ViewBag.Rating = new SelectList(RatingList, null, null, rate);
 
             editModel.Details = details;
 
@@ -414,6 +352,7 @@ namespace Biblioteka.Controllers
                             db.Entry(item).State = EntityState.Deleted;
                         }
                     }
+
                     var user_books = new User_Books()
                     {
                         UserId = user_id,
@@ -459,6 +398,105 @@ namespace Biblioteka.Controllers
             db.Books.Remove(books);
             db.SaveChanges();
             return RedirectToAction("Index");
+        }
+
+        [HttpGet]
+        public ActionResult Favorite(string searchTitle, string searchAuthor, string BookGenre, string Sort)
+        {
+            string user_id = null;
+            if (User.Identity.IsAuthenticated)
+            {
+                user_id = User.Identity.GetUserId();
+            }
+
+            var books = from b in db.Books
+                    join ub in db.User_Books on b.id equals ub.BookId
+                    where ub.isFavorite == true & ub.UserId == user_id
+                    select b;
+
+            GetGenreList();
+
+            if (!String.IsNullOrEmpty(searchTitle))
+                books = FindByTitle(books, searchTitle);
+
+            if (!String.IsNullOrEmpty(searchAuthor))
+                books = FindByAuthor(books, searchAuthor);
+
+            if (!String.IsNullOrEmpty(BookGenre))
+                books = FindByGenre(books, BookGenre);
+
+            if (!String.IsNullOrEmpty(Sort))
+                books = GetSortingList(books, Sort);
+
+            ViewBag.Sort = new SelectList(sorting);
+
+            return View(books);
+        }
+
+        [HttpGet]
+        public ActionResult OnWishList(string searchTitle, string searchAuthor, string BookGenre, string Sort)
+        {
+            string user_id = null;
+            if (User.Identity.IsAuthenticated)
+            {
+                user_id = User.Identity.GetUserId();
+            }
+
+            var books = from b in db.Books
+                        join ub in db.User_Books on b.id equals ub.BookId
+                        where ub.isOnWishList == true & ub.UserId == user_id
+                        select b;
+
+            GetGenreList();
+
+            if (!String.IsNullOrEmpty(searchTitle))
+                books = FindByTitle(books, searchTitle);
+
+            if (!String.IsNullOrEmpty(searchAuthor))
+                books = FindByAuthor(books, searchAuthor);
+
+            if (!String.IsNullOrEmpty(BookGenre))
+                books = FindByGenre(books, BookGenre);
+
+            if (!String.IsNullOrEmpty(Sort))
+                books = GetSortingList(books, Sort);
+
+            ViewBag.Sort = new SelectList(sorting);
+
+            return View(books);
+        }
+
+        [HttpGet]
+        public ActionResult Read(string searchTitle, string searchAuthor, string BookGenre, string Sort)
+        {
+            string user_id = null;
+            if (User.Identity.IsAuthenticated)
+            {
+                user_id = User.Identity.GetUserId();
+            }
+
+            var books = from b in db.Books
+                        join ub in db.User_Books on b.id equals ub.BookId
+                        where ub.isRead == true & ub.UserId == user_id
+                        select b;
+
+            GetGenreList();
+
+            if (!String.IsNullOrEmpty(searchTitle))
+                books = FindByTitle(books, searchTitle);
+
+            if (!String.IsNullOrEmpty(searchAuthor))
+                books = FindByAuthor(books, searchAuthor);
+
+            if (!String.IsNullOrEmpty(BookGenre))
+                books = FindByGenre(books, BookGenre);
+
+            if (!String.IsNullOrEmpty(Sort))
+                books = GetSortingList(books, Sort);
+
+            ViewBag.Sort = new SelectList(sorting);
+
+            return View(books);
         }
 
         public bool IsInDatabase(string data, string data2, int n)
@@ -549,10 +587,66 @@ namespace Biblioteka.Controllers
             return details;
         }
 
-        //public ActionResult NextAuthor()
-        //{
-        //    return PartialView("_Authors_Partial", new CombinedDataModels());
-        //}
+        public void GetGenreList()
+        {
+            var GenreLst = new List<string>();
+            var all_genres = from g in db.Genres select g.genre;
+            GenreLst.AddRange(all_genres);
+            ViewBag.BookGenre = new SelectList(GenreLst);
+        }
+
+        public IQueryable<Books> GetSortingList(IQueryable<Books> books, string Sort)
+        {
+                switch (Sort)
+                {
+                    case "Tytuł: alfabetycznie":
+                        books = books.OrderBy(b => b.title);
+                        break;
+                    case "Tytuł: niealfabatycznie":
+                        books = books.OrderByDescending(b => b.title);
+                        break;
+                    case "Rok wydania: rosnąco":
+                        books = books.OrderBy(b => b.year);
+                        break;
+                    case "Rok wydania: malejąco":
+                        books = books.OrderByDescending(b => b.year);
+                        break;
+                    default:
+                        break;
+                }
+
+            return books;
+        }
+
+        public IQueryable<Books> FindByTitle(IQueryable<Books> books, string searchTitle)
+        {
+                books = books.Where(s => s.title.Contains(searchTitle));
+
+            return books;
+        }
+
+        public IQueryable<Books> FindByAuthor(IQueryable<Books> books, string searchAuthor)
+        {
+                books = from b in db.Books
+                        join ba in db.Book_Authors on b.id equals ba.BookId
+                        join a in db.Authors on ba.AuthorId equals a.id
+                        where a.firstName == searchAuthor || a.lastName == searchAuthor || a.firstName + " " + a.lastName == searchAuthor || a.lastName + " " + a.firstName == searchAuthor
+                        select b;
+
+            return books;
+        }
+
+        public IQueryable<Books> FindByGenre(IQueryable<Books> books, string BookGenre)
+        {
+
+                books = from b in db.Books
+                        join bg in db.Book_Genres on b.id equals bg.BookId
+                        join g in db.Genres on bg.GenreId equals g.id
+                        where g.genre == BookGenre
+                        select b;
+
+            return books;
+        }
 
         protected override void Dispose(bool disposing)
         {

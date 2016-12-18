@@ -119,9 +119,12 @@
                 @Html.DisplayName("Ocena")
             </dt>
 
-            <dd>
-                @Html.DisplayFor(model => model.rating)/10
-            </dd>
+            if (Model.rating != 0)
+            {
+                <dd>
+                    @Html.DisplayFor(model => model.rating)/10
+                </dd>
+            }
 
             <dt>
                 @Html.DisplayName("Komentarz")
