@@ -400,7 +400,6 @@ namespace Biblioteka.Controllers
             return RedirectToAction("Index");
         }
 
-        [HttpGet]
         public ActionResult Favorite(string searchTitle, string searchAuthor, string BookGenre, string Sort)
         {
             string user_id = null;
@@ -433,7 +432,6 @@ namespace Biblioteka.Controllers
             return View(books);
         }
 
-        [HttpGet]
         public ActionResult OnWishList(string searchTitle, string searchAuthor, string BookGenre, string Sort)
         {
             string user_id = null;
@@ -466,7 +464,6 @@ namespace Biblioteka.Controllers
             return View(books);
         }
 
-        [HttpGet]
         public ActionResult Read(string searchTitle, string searchAuthor, string BookGenre, string Sort)
         {
             string user_id = null;
@@ -477,7 +474,7 @@ namespace Biblioteka.Controllers
 
             var books = from b in db.Books
                         join ub in db.User_Books on b.id equals ub.BookId
-                        where ub.isRead == true & ub.UserId == user_id
+                        where ub.isRead && ub.UserId == user_id
                         select b;
 
             GetGenreList();
@@ -627,11 +624,12 @@ namespace Biblioteka.Controllers
 
         public IQueryable<Books> FindByAuthor(IQueryable<Books> books, string searchAuthor)
         {
-                books = from b in db.Books
-                        join ba in db.Book_Authors on b.id equals ba.BookId
-                        join a in db.Authors on ba.AuthorId equals a.id
-                        where a.firstName == searchAuthor || a.lastName == searchAuthor || a.firstName + " " + a.lastName == searchAuthor || a.lastName + " " + a.firstName == searchAuthor
-                        select b;
+            books = from b in books
+                    join ba in db.Book_Authors on b.id equals ba.BookId
+                    join a in db.Authors on ba.AuthorId equals a.id
+                    join ub in db.User_Books on b.id equals ub.BookId
+                    where (a.firstName == searchAuthor || a.lastName == searchAuthor || a.firstName + " " + a.lastName == searchAuthor || a.lastName + " " + a.firstName == searchAuthor)
+                    select b;
 
             return books;
         }
@@ -639,7 +637,7 @@ namespace Biblioteka.Controllers
         public IQueryable<Books> FindByGenre(IQueryable<Books> books, string BookGenre)
         {
 
-                books = from b in db.Books
+                books = from b in books
                         join bg in db.Book_Genres on b.id equals bg.BookId
                         join g in db.Genres on bg.GenreId equals g.id
                         where g.genre == BookGenre

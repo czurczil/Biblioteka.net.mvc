@@ -7,7 +7,7 @@
 <h2>@ViewBag.Title</h2>
 
 <p>
-    @using (Html.BeginForm("Index", "Books", FormMethod.Get))
+    @using (Html.BeginForm("Favorite", "Books", FormMethod.Get))
     {
     <p>
         Tytuł: @Html.TextBox("searchTitle")
